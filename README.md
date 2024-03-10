@@ -35,6 +35,6 @@ This setup is crucial for the proper functioning of the Order Tracker website, e
 
 ### Default Login Details
 
-The default login details would be 'admin' and 'password'.
+The default login details would be `admin` and `password`.
 Please change these for security reasons.
 

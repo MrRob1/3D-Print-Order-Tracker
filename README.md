@@ -32,3 +32,9 @@ The SQL script `database_setup.sql` should be imported into your SQL server. Thi
 Ensure you have the correct permissions to create tables and insert data into your database before running the script.
 
 This setup is crucial for the proper functioning of the Order Tracker website, enabling features such as order creation, management, tracking, and file handling.
+
+### Default Login Details
+
+The default login details would be admin and password
+Please change these for security reasons.
+

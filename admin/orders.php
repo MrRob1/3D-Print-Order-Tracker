@@ -120,7 +120,9 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
                 $fileRow = $fetchStmt->fetch();
 
                 if ($fileRow && !empty($fileRow['file_name'])) {
-                    $filePath = '../files/' . $fileRow['file_name']; // Adjust the path according to your directory structure
+                    $filesDir = realpath(__DIR__ . '/files'); // Adjust the path according to your directory structure
+                    $filePath = $filesDir . '/' . $fileRow['file_name'];
+
                     if (file_exists($filePath)) {
                         unlink($filePath); // Delete the file
                     }

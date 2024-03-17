@@ -11,3 +11,30 @@ The Order Tracker website is designed to manage and track customer orders for a 
 - **Security:** Admin authentication to manage orders.
 
 This website streamlines the process of managing and tracking orders for both customers and administrators.
+
+## Database Setup
+
+To set up the database for the Order Tracker website, you need to import the following SQL script into your SQL server. This script creates the necessary tables and inserts initial data for the application to function correctly.
+
+### Tables Created:
+
+- **`orders`**: Stores information about each order, including tracking numbers, status, customer names, and file names associated with the orders.
+- **`admin_users`**: Contains admin user credentials for accessing the admin interface.
+
+### Initial Data:
+
+- An initial admin user is inserted into the `admin_users` table. You should replace the default credentials with your own and use a password hash in production for security.
+
+### SQL Script:
+
+The SQL script `database_setup.sql` should be imported into your SQL server. This script includes commands to create the tables and insert the initial data mentioned above.
+
+Ensure you have the correct permissions to create tables and insert data into your database before running the script.
+
+This setup is crucial for the proper functioning of the Order Tracker website, enabling features such as order creation, management, tracking, and file handling.
+
+### Default Login Details
+
+The default login details would be `admin` and `password`.
+Please change these for security reasons.
+

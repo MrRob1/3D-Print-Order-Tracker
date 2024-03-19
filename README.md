@@ -42,6 +42,7 @@ Please change these for security reasons.
 
 - Upload Multiple Files (DONE)
 - Ability to upload more files in the orders page (DONE)
+- Optional entry to store the users email address on create order page (DONE)
 - SMTP email notifications on status changes 
 - Settings page to edit website name on pages and email headers
 - Ability to change admin password on the settings page

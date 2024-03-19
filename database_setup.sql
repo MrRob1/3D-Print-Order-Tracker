@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS orders (
     customer_name VARCHAR(255) NOT NULL, -- Added customer_name column
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    file_name VARCHAR(255) DEFAULT NULL -- Column added to store the name of the uploaded file
+    file_name VARCHAR(255) DEFAULT NULL, -- Column added to store the name of the uploaded file
+    email VARCHAR(255) DEFAULT NULL -- Column added to store the optional email address
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Create the `admin_users` table
@@ -30,4 +31,5 @@ INSERT INTO admin_users (username, password) VALUES ('admin', MD5('password'));
 -- `created_at` and `updated_at` timestamps are included for record management.
 -- The `customer_name` column is added to store the customer's name with each order.
 -- The `file_name` column is added to store the name of the uploaded .zip file.
+-- The `email` column is added to store the optional email address.
 

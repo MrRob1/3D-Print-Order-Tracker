@@ -33,6 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Generate a random tracking number
     $trackingNumber = generateRandomTrackingNumber();
     $customerName = $_POST['customer_name']; // Get the customer name from the form
+    $email = isset($_POST['email']) ? $_POST['email'] : null; // Get the email from the form
 
     // Handle multiple file uploads
     if (isset($_FILES['order_files']) && count($_FILES['order_files']['name']) > 0) {
@@ -52,13 +53,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Prepare an insert statement
-    $sql = "INSERT INTO orders (tracking_number, status, customer_name, file_name) VALUES (:tracking_number, 'Pending', :customer_name, :file_name)";
+    $sql = "INSERT INTO orders (tracking_number, status, customer_name, file_name, email) VALUES (:tracking_number, 'Pending', :customer_name, :file_name, :email)";
 
     if ($stmt = $pdo->prepare($sql)) {
         // Bind variables to the prepared statement as parameters
         $stmt->bindParam(':tracking_number', $trackingNumber, PDO::PARAM_STR);
         $stmt->bindParam(':customer_name', $customerName, PDO::PARAM_STR);
         $stmt->bindParam(':file_name', $fileName, PDO::PARAM_STR); // Bind file name
+        $stmt->bindParam(':email', $email, PDO::PARAM_STR); // Bind email
 
         // Attempt to execute the prepared statement
         if ($stmt->execute()) {
@@ -148,8 +150,12 @@ unset($pdo);
     <h2 class="mb-4">Generate New Order</h2>
     <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" class="mb-3" enctype="multipart/form-data">
         <div class="form-group">
-            <label for="customerName" class="sr-only">Customer Name:</label>
-            <input type="text" class="form-control form-control-lg" id="customerName" name="customer_name" placeholder="Enter customer name" required>
+            <label for="customerName">Customer Name:</label>
+            <input type="text" class="form-control" id="customerName" name="customer_name" placeholder="Enter customer name" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email (optional):</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="Enter email address">
         </div>
         <div class="form-group">
             <label for="orderFile">Order Files:</label>

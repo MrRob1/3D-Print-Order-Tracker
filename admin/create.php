@@ -139,8 +139,11 @@ unset($pdo);
                     <a class="nav-link" href="orders.php">Orders</a>
                 </li>
                 <li class="nav-item">
-    <a class="nav-link" href="logout.php">Logout</a>
-</li>
+                    <a class="nav-link" href="settings.php">Settings</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="logout.php">Logout</a>
+                </li>
             </ul>
         </div>
     </div>

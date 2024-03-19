@@ -140,6 +140,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['deleteOrderId'])) {
                     <a class="nav-link" href="/admin/orders.php">Orders</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="settings.php">Settings</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="/admin/logout.php">Logout</a>
                 </li>
             </ul>
@@ -244,4 +247,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['deleteOrderId'])) {
 
 </body>
 </html>
-

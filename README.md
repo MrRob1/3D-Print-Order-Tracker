@@ -38,3 +38,12 @@ This setup is crucial for the proper functioning of the Order Tracker website, e
 The default login details would be `admin` and `password`.
 Please change these for security reasons.
 
+### Coming Soon
+
+- Upload Multiple Files
+- SMTP email notifications on status changes
+- Settings page to edit website name on pages and email headers
+- Ability to change admin password on the settings page
+- Support ticket system for customers
+
+

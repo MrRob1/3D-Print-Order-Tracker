@@ -149,8 +149,8 @@ unset($pdo);
     </div>
 </nav>
 
-<div class="container mt-5">
-    <h2 class="mb-4">Generate New Order</h2>
+<div class="container">
+    <h1>Generate New Order</h2>
     <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" class="mb-3" enctype="multipart/form-data">
         <div class="form-group">
             <label for="customerName">Customer Name:</label>

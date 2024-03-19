@@ -4,6 +4,77 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     header("Location: login.php");
     exit;
 }
+
+require '../config.php'; // Include the database configuration file
+
+// Handle additional file uploads to an existing order's zip file
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['additional_files'])) {
+    $orderId = $_POST['orderId'];
+    // Fetch the existing zip file name from the database
+    $fetchSql = "SELECT file_name FROM orders WHERE id = ?";
+    $fetchStmt = $pdo->prepare($fetchSql);
+    $fetchStmt->execute([$orderId]);
+    $fileRow = $fetchStmt->fetch();
+
+    if ($fileRow && !empty($fileRow['file_name'])) {
+        $filesDir = realpath(__DIR__ . '/files');
+        $filePath = $filesDir . '/' . $fileRow['file_name'];
+        $zip = new ZipArchive();
+        if ($zip->open($filePath) === TRUE) {
+            foreach ($_FILES['additional_files']['tmp_name'] as $key => $tmpName) {
+                $fileName = $_FILES['additional_files']['name'][$key];
+                $zip->addFromString($fileName, file_get_contents($tmpName));
+            }
+            $zip->close();
+            echo "<div class='alert alert-success' role='alert'>Files added successfully.</div>";
+        } else {
+            echo "<div class='alert alert-danger' role='alert'>Failed to open zip file.</div>";
+        }
+    }
+}
+
+// Handle status change and potentially update postal_tracking_number
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['status']) && isset($_POST['orderId'])) {
+    $newStatus = $_POST['status'];
+    $orderId = $_POST['orderId'];
+    $updateSql = "UPDATE orders SET status = ? WHERE id = ?";
+    $params = [$newStatus, $orderId];
+
+    // Check if postal_tracking_number needs to be updated
+    if ($newStatus == 'Dispatched' && !empty($_POST['postalTrackingNumber'])) {
+        $postalTrackingNumber = $_POST['postalTrackingNumber'];
+        $updateSql = "UPDATE orders SET status = ?, postal_tracking_number = ? WHERE id = ?";
+        $params = [$newStatus, $postalTrackingNumber, $orderId];
+    }
+
+    $updateStmt = $pdo->prepare($updateSql);
+    $updateStmt->execute($params);
+}
+
+// Handle delete
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['deleteOrderId'])) {
+    $deleteOrderId = $_POST['deleteOrderId'];
+
+    // First, fetch the file name associated with the order
+    $fetchSql = "SELECT file_name FROM orders WHERE id = ?";
+    $fetchStmt = $pdo->prepare($fetchSql);
+    $fetchStmt->execute([$deleteOrderId]);
+    $fileRow = $fetchStmt->fetch();
+
+    if ($fileRow && !empty($fileRow['file_name'])) {
+        $filesDir = realpath(__DIR__ . '/files'); // Adjust the path according to your directory structure
+        $filePath = $filesDir . '/' . $fileRow['file_name'];
+
+        if (file_exists($filePath)) {
+            unlink($filePath); // Delete the file
+        }
+    }
+
+    // Then, delete the order from the database
+    $deleteSql = "DELETE FROM orders WHERE id = ?";
+    $deleteStmt = $pdo->prepare($deleteSql);
+    $deleteStmt->execute([$deleteOrderId]);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -47,6 +118,9 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
+        .status-col {
+            width: 25%;
+        }
     </style>
 </head>
 <body>
@@ -76,64 +150,27 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 <div class="container">
     <h1>Orders</h1>
     <table class="table">
+        <colgroup>
+            <col>
+            <col>
+            <col class="status-col">
+            <col>
+            <col>
+            <col>
+        </colgroup>
         <thead class="thead-light">
             <tr>
-                <th>ID</th>
-                <th>Customer Name</th> <!-- Add Customer Name Column -->
+                <th>Customer Name</th>
                 <th>Tracking Number</th>
                 <th>Status</th>
                 <th>Change Status</th>
-                <th>Files</th> <!-- New column for Files button -->
+                <th>Upload</th>
+                <th>Files</th>
                 <th>Delete</th>
             </tr>
         </thead>
         <tbody>
             <?php
-            require '../config.php'; // Include the database configuration file
-
-            // Handle status change and potentially update postal_tracking_number
-            if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['status']) && isset($_POST['orderId'])) {
-                $newStatus = $_POST['status'];
-                $orderId = $_POST['orderId'];
-                $updateSql = "UPDATE orders SET status = ? WHERE id = ?";
-                $params = [$newStatus, $orderId];
-
-                // Check if postal_tracking_number needs to be updated
-                if ($newStatus == 'Dispatched' && !empty($_POST['postalTrackingNumber'])) {
-                    $postalTrackingNumber = $_POST['postalTrackingNumber'];
-                    $updateSql = "UPDATE orders SET status = ?, postal_tracking_number = ? WHERE id = ?";
-                    $params = [$newStatus, $postalTrackingNumber, $orderId];
-                }
-
-                $updateStmt = $pdo->prepare($updateSql);
-                $updateStmt->execute($params);
-            }
-
-            // Handle delete
-            if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['deleteOrderId'])) {
-                $deleteOrderId = $_POST['deleteOrderId'];
-
-                // First, fetch the file name associated with the order
-                $fetchSql = "SELECT file_name FROM orders WHERE id = ?";
-                $fetchStmt = $pdo->prepare($fetchSql);
-                $fetchStmt->execute([$deleteOrderId]);
-                $fileRow = $fetchStmt->fetch();
-
-                if ($fileRow && !empty($fileRow['file_name'])) {
-                    $filesDir = realpath(__DIR__ . '/files'); // Adjust the path according to your directory structure
-                    $filePath = $filesDir . '/' . $fileRow['file_name'];
-
-                    if (file_exists($filePath)) {
-                        unlink($filePath); // Delete the file
-                    }
-                }
-
-                // Then, delete the order from the database
-                $deleteSql = "DELETE FROM orders WHERE id = ?";
-                $deleteStmt = $pdo->prepare($deleteSql);
-                $deleteStmt->execute([$deleteOrderId]);
-            }
-
             // Query to select all orders
             $sql = "SELECT id, tracking_number, status, customer_name, file_name FROM orders"; // Include customer_name and file_name in the SELECT query
             $stmt = $pdo->prepare($sql);
@@ -144,8 +181,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
                 // Fetch all orders
                 while($row = $stmt->fetch()) {
                     echo "<tr>";
-                    echo "<td>" . htmlspecialchars($row['id']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['customer_name']) . "</td>"; // Display Customer Name
+                    echo "<td>" . htmlspecialchars($row['customer_name']) . "</td>";
                     echo "<td>" . htmlspecialchars($row['tracking_number']) . "</td>";
                     echo "<td>" . htmlspecialchars($row['status']) . "</td>";
                     echo "<td>";
@@ -165,9 +201,17 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
                     echo "</div>";
                     echo "</td>";
                     echo "<td>";
+                    // Upload files form
+                    echo "<form action='' method='POST' enctype='multipart/form-data'>";
+                    echo "<input type='file' name='additional_files[]' multiple>";
+                    echo "<input type='hidden' name='orderId' value='" . $row['id'] . "'>";
+                    echo "<input type='submit' value='Upload'>";
+                    echo "</form>";
+                    echo "</td>";
+                    echo "<td>";
                     // Files button
                     if (!empty($row['file_name'])) {
-                        echo "<a href='download.php?file=" . urlencode($row['file_name']) . "' class='btn btn-primary'>Download</a>";
+                        echo "<a href='download.php?file=" . urlencode($row['file_name']) . "' class='btn btn-primary btn-sm'>Download</a>";
                     } else {
                         echo "No file";
                     }
@@ -176,7 +220,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
                     // Delete button form
                     echo "<form action='' method='POST'>";
                     echo "<input type='hidden' name='deleteOrderId' value='" . $row['id'] . "'>";
-                    echo "<input type='submit' value='Delete' onclick='return confirm(\"Are you sure you want to delete this order?\");'>";
+                    echo "<input type='submit' class='btn btn-danger btn-sm' value='Delete' onclick='return confirm(\"Are you sure you want to delete this order?\");'>";
                     echo "</form>";
                     echo "</td>";
                     echo "</tr>";
@@ -200,3 +244,4 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 
 </body>
 </html>
+

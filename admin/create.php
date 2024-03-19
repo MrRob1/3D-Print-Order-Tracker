@@ -34,13 +34,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $trackingNumber = generateRandomTrackingNumber();
     $customerName = $_POST['customer_name']; // Get the customer name from the form
 
-    // Handle file upload
-    if (isset($_FILES['order_file']) && $_FILES['order_file']['error'] == 0) {
-        $fileTmpPath = $_FILES['order_file']['tmp_name'];
+    // Handle multiple file uploads
+    if (isset($_FILES['order_files']) && count($_FILES['order_files']['name']) > 0) {
+        $zip = new ZipArchive();
         $fileName = $trackingNumber . generateRandomString() . '.zip';
         $destPath = __DIR__ . '/files/' . $fileName;
-
-        if (move_uploaded_file($fileTmpPath, $destPath)) {
+        if ($zip->open($destPath, ZipArchive::CREATE) === TRUE) {
+            for ($i = 0; $i < count($_FILES['order_files']['name']); $i++) {
+                $fileTmpPath = $_FILES['order_files']['tmp_name'][$i];
+                $zip->addFromString(basename($_FILES['order_files']['name'][$i]), file_get_contents($fileTmpPath));
+            }
+            $zip->close();
             // File upload success
         } else {
             echo "<div class='alert alert-danger' role='alert'>File upload failed.</div>";
@@ -148,8 +152,8 @@ unset($pdo);
             <input type="text" class="form-control form-control-lg" id="customerName" name="customer_name" placeholder="Enter customer name" required>
         </div>
         <div class="form-group">
-            <label for="orderFile">Order File:</label>
-            <input type="file" class="form-control" id="orderFile" name="order_file" required>
+            <label for="orderFile">Order Files:</label>
+            <input type="file" class="form-control" id="orderFile" name="order_files[]" multiple required>
         </div>
         <button type="submit" class="btn btn-lg btn-primary btn-block">Generate New Order</button>
     </form>
